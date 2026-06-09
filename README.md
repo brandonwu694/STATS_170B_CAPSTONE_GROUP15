@@ -24,7 +24,8 @@ Target classes:
 ├── tests/
 │   └── test_classification_pipeline.py
 ├── notebooks/
-│   └── project.ipynb
+│   ├── project.ipynb
+│   └── model_performance_checks.ipynb
 ├── data/
 │   └── sample/        # synthetic demo data only
 ├── models/            # saved model artifacts
@@ -155,6 +156,16 @@ If the model artifact is missing, generate it with:
 ```bash
 python scripts/train_best_model.py --sample
 ```
+
+## Review Model Performance
+
+Run the performance and assumption-check notebook:
+
+```bash
+jupyter notebook notebooks/model_performance_checks.ipynb
+```
+
+This notebook summarizes saved model reports and checks patient-level split integrity, target labels, leakage-prone feature names, feature compatibility with the saved model, and prediction output shape.
 
 ## Restricted MIMIC-IV Data
 
