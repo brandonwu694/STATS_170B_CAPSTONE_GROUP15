@@ -3,8 +3,6 @@ numpy
 pyarrow
 scikit-learn
 joblib
-lifelines
-scikit-survival
 matplotlib
 seaborn
 jupyter

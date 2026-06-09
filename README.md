@@ -10,8 +10,6 @@ Target classes:
 | `1` | ICU LOS `2` through `7` days, inclusive |
 | `2` | ICU LOS `> 7` days |
 
-The previous survival-analysis and log-LOS regression work is preserved under `legacy_survival/`.
-
 ## Repository Structure
 
 | Path | Description |
@@ -26,7 +24,6 @@ The previous survival-analysis and log-LOS regression work is preserved under `l
 | `data/sample/` | Synthetic demo data. No restricted patient records are included. |
 | `models/` | Saved model artifacts and metadata. |
 | `reports/` | Classification metrics, confusion matrices, split files, and predictions. |
-| `legacy_survival/` | Archived survival/log-LOS notebooks, script, and prior model artifacts. |
 
 ## Leakage Controls
 
@@ -42,7 +39,7 @@ The active pipeline explicitly:
 
 ## Feature Sources
 
-The training script can reuse existing notebook-generated processed feature tables when `data/processed/modeling_dataset.parquet` exists. Those features are filtered to remove known leakage columns and prior survival/regression targets.
+The training script can reuse existing notebook-generated processed feature tables when `data/processed/modeling_dataset.parquet` exists. Those features are filtered to remove known leakage columns and prior outcome targets.
 
 The raw-data feature path uses:
 
