@@ -26,6 +26,7 @@ from src.features.build_features import (
     make_sample_dataset,
 )
 from src.models.pipeline import build_classifier, fit_with_balanced_weights
+from src.models.pipeline import build_dummy_baseline, build_logistic_regression_baseline
 
 
 class ClassificationPipelineTests(unittest.TestCase):
@@ -95,6 +96,25 @@ class ClassificationPipelineTests(unittest.TestCase):
         test_transformed = model.named_steps["preprocessor"].transform(test[feature_cols])
         self.assertEqual(train_transformed.shape[1], test_transformed.shape[1])
         assert_matching_feature_columns(feature_cols, list(test[feature_cols].columns))
+
+    def test_baseline_models_fit_on_same_feature_matrix(self) -> None:
+        df = make_sample_dataset()
+        feature_cols = [
+            col
+            for col in df.columns
+            if col not in {"subject_id", "hadm_id", "stay_id", "intime", TARGET_COLUMN}
+        ]
+        train = df.iloc[:45].copy()
+        test = df.iloc[45:].copy()
+        numeric_cols, categorical_cols = infer_feature_types(train, feature_cols)
+
+        logistic = build_logistic_regression_baseline(numeric_cols, categorical_cols)
+        logistic.fit(train[feature_cols], train[TARGET_COLUMN])
+        self.assertEqual(len(logistic.predict(test[feature_cols])), len(test))
+
+        dummy = build_dummy_baseline()
+        dummy.fit(train[feature_cols], train[TARGET_COLUMN])
+        self.assertEqual(len(dummy.predict(test[feature_cols])), len(test))
 
     def test_unused_raw_sources_build_first24h_stay_level_features(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

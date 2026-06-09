@@ -25,9 +25,11 @@ from src.features.build_features import (
     make_sample_dataset,
 )
 from src.models.pipeline import build_classifier, fit_with_balanced_weights
+from src.models.pipeline import build_dummy_baseline, build_logistic_regression_baseline
 
 
 MODEL_NAME = "icu_los_classifier"
+BASELINE_MODEL_NAMES = ["dummy_most_frequent", "logistic_regression"]
 
 
 def parse_args() -> argparse.Namespace:
@@ -65,6 +67,34 @@ def _load_inputs(args: argparse.Namespace) -> tuple[pd.DataFrame, list[str]]:
     return build_modeling_frame(args.raw_data_dir, processed_dir=processed_dir)
 
 
+def _fit_models(numeric_cols: list[str], categorical_cols: list[str], X_train, y_train) -> dict[str, object]:
+    models = {
+        "dummy_most_frequent": build_dummy_baseline(),
+        "logistic_regression": build_logistic_regression_baseline(numeric_cols, categorical_cols),
+        MODEL_NAME: build_classifier(numeric_cols, categorical_cols),
+    }
+    fitted = {}
+    for model_name, model in models.items():
+        if model_name == MODEL_NAME:
+            fitted[model_name] = fit_with_balanced_weights(model, X_train, y_train)
+        else:
+            model.fit(X_train, y_train)
+            fitted[model_name] = model
+    return fitted
+
+
+def _metrics_row(model_name: str, split_name: str, metrics: dict) -> dict:
+    return {
+        "model": model_name,
+        "split": split_name,
+        "macro_f1": metrics["macro_f1"],
+        "weighted_f1": metrics["weighted_f1"],
+        "balanced_accuracy": metrics["balanced_accuracy"],
+        "roc_auc_ovr_macro": metrics.get("roc_auc_ovr_macro"),
+        "roc_auc_ovr_weighted": metrics.get("roc_auc_ovr_weighted"),
+    }
+
+
 def main() -> None:
     args = parse_args()
     modeling_df, feature_cols = _load_inputs(args)
@@ -95,14 +125,32 @@ def main() -> None:
     assert_matching_feature_columns(X_train.columns, X_val.columns)
     assert_matching_feature_columns(X_train.columns, X_test.columns)
 
-    model = build_classifier(numeric_cols, categorical_cols)
-    model = fit_with_balanced_weights(model, X_train, y_train)
+    fitted_models = _fit_models(numeric_cols, categorical_cols, X_train, y_train)
+    model = fitted_models[MODEL_NAME]
 
     reports_dir = args.reports_dir / ("classification_sample" if args.sample else "classification")
-    val_metrics, val_per_class, val_conf = evaluate_classifier(model, X_val, y_val)
-    test_metrics, test_per_class, test_conf = evaluate_classifier(model, X_test, y_test)
-    write_evaluation_outputs(reports_dir, "validation", val_metrics, val_per_class, val_conf)
-    write_evaluation_outputs(reports_dir, "test", test_metrics, test_per_class, test_conf)
+    comparison_rows = []
+    selected_test_metrics = None
+    for model_name, fitted_model in fitted_models.items():
+        model_report_dir = reports_dir / model_name
+        val_metrics, val_per_class, val_conf = evaluate_classifier(fitted_model, X_val, y_val)
+        test_metrics, test_per_class, test_conf = evaluate_classifier(fitted_model, X_test, y_test)
+        write_evaluation_outputs(model_report_dir, "validation", val_metrics, val_per_class, val_conf)
+        write_evaluation_outputs(model_report_dir, "test", test_metrics, test_per_class, test_conf)
+        comparison_rows.append(_metrics_row(model_name, "validation", val_metrics))
+        comparison_rows.append(_metrics_row(model_name, "test", test_metrics))
+        if model_name == MODEL_NAME:
+            selected_test_metrics = test_metrics
+
+    if selected_test_metrics is None:
+        raise RuntimeError("Selected model metrics were not computed")
+    test_metrics = selected_test_metrics
+    comparison_df = pd.DataFrame(comparison_rows).sort_values(
+        ["split", "macro_f1"],
+        ascending=[True, False],
+    )
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    comparison_df.to_csv(reports_dir / "model_comparison.csv", index=False)
 
     test_predictions = test_df[["subject_id", "hadm_id", "stay_id", TARGET_COLUMN]].copy()
     test_predictions["predicted_los_category"] = model.predict(X_test)
@@ -111,7 +159,7 @@ def main() -> None:
         for label in model.classes_:
             test_predictions[f"prob_class_{label}"] = probabilities[:, list(model.classes_).index(label)]
     reports_dir.mkdir(parents=True, exist_ok=True)
-    test_predictions.to_csv(reports_dir / "test_predictions.csv", index=False)
+    test_predictions.to_csv(reports_dir / f"{MODEL_NAME}_test_predictions.csv", index=False)
     modeling_df[["subject_id", "hadm_id", "stay_id", "split", TARGET_COLUMN]].to_csv(
         reports_dir / "patient_level_split.csv",
         index=False,
@@ -131,6 +179,18 @@ def main() -> None:
     }
     joblib.dump(artifact, model_path)
 
+    for baseline_name in BASELINE_MODEL_NAMES:
+        baseline_artifact_name = f"{artifact_model_name}_{baseline_name}"
+        baseline_artifact = {
+            "model": fitted_models[baseline_name],
+            "feature_columns": feature_cols,
+            "numeric_columns": numeric_cols,
+            "categorical_columns": categorical_cols,
+            "target_column": TARGET_COLUMN,
+            "target_labels": TARGET_LABELS,
+        }
+        joblib.dump(baseline_artifact, args.models_dir / f"{baseline_artifact_name}.joblib")
+
     metadata = {
         "model_name": artifact_model_name,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -139,6 +199,7 @@ def main() -> None:
         "feature_window": "ICU admission through first 24 hours only",
         "split_policy": "patient-level split by subject_id with explicit overlap assertion",
         "class_imbalance": "balanced sample weights fitted on training split only",
+        "baseline_models": BASELINE_MODEL_NAMES,
         "model_path": str(model_path),
         "train_rows": int(len(train_df)),
         "validation_rows": int(len(val_df)),
@@ -147,12 +208,14 @@ def main() -> None:
         "numeric_feature_count": int(len(numeric_cols)),
         "categorical_feature_count": int(len(categorical_cols)),
         "test_metrics": test_metrics,
+        "model_comparison_path": str(reports_dir / "model_comparison.csv"),
     }
     metadata_path.write_text(json.dumps(metadata, indent=2, default=str), encoding="utf-8")
 
     print(f"Saved model: {model_path}")
     print(f"Saved metadata: {metadata_path}")
     print(f"Saved reports: {reports_dir}")
+    print(f"Saved model comparison: {reports_dir / 'model_comparison.csv'}")
     print(json.dumps({k: v for k, v in test_metrics.items() if k != "classification_report"}, indent=2))
 
 

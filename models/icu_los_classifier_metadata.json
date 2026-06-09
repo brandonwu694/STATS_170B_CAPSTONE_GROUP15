@@ -1,6 +1,6 @@
 {
   "model_name": "icu_los_classifier",
-  "created_at_utc": "2026-06-09T19:44:35.885681+00:00",
+  "created_at_utc": "2026-06-09T21:57:15.515075+00:00",
   "task": "three-class ICU length-of-stay classification",
   "target_definition": {
     "0": "LOS < 2 days",
@@ -10,6 +10,10 @@
   "feature_window": "ICU admission through first 24 hours only",
   "split_policy": "patient-level split by subject_id with explicit overlap assertion",
   "class_imbalance": "balanced sample weights fitted on training split only",
+  "baseline_models": [
+    "dummy_most_frequent",
+    "logistic_regression"
+  ],
   "model_path": "/Users/brandonwu/Documents/ICU_LOS_Survival_Analysis/models/icu_los_classifier.joblib",
   "train_rows": 66151,
   "validation_rows": 14036,
@@ -56,5 +60,6 @@
         "support": 14257.0
       }
     }
-  }
+  },
+  "model_comparison_path": "/Users/brandonwu/Documents/ICU_LOS_Survival_Analysis/reports/classification/model_comparison.csv"
 }
