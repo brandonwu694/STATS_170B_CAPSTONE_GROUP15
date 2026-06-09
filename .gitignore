@@ -6,6 +6,14 @@ data/*
 !data/sample/
 !data/sample/**
 
+# Keep generated full-data model artifacts local. The synthetic sample model is
+# small enough for the public demo and safe to publish.
+models/*.joblib
+models/*_metadata.json
+!models/.gitkeep
+!models/icu_los_classifier_sample.joblib
+!models/icu_los_classifier_sample_metadata.json
+
 dst-env/
 .cache/v/cache/lastfailed
 tests/.cache/v/cache/lastfailed

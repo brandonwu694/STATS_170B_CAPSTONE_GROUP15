@@ -50,6 +50,7 @@ Held-out test performance from `reports/classification/model_comparison.csv`:
 | Model | Macro F1 | Weighted F1 | Balanced Accuracy | ROC AUC Macro |
 | --- | ---: | ---: | ---: | ---: |
 | HistGradientBoosting | 0.590 | 0.640 | 0.617 | 0.814 |
+| Random Forest | 0.579 | 0.649 | 0.566 | 0.807 |
 | Logistic Regression | 0.561 | 0.608 | 0.604 | 0.785 |
 | Dummy Majority | 0.225 | 0.342 | 0.333 | 0.500 |
 
@@ -94,16 +95,20 @@ models/icu_los_classifier.joblib
 models/icu_los_classifier_metadata.json
 ```
 
-The training script also fits two comparison baselines on the same patient-level split:
+Full-data model artifacts are generated locally and ignored by git. The repository keeps only the small synthetic sample model needed for the public demo.
+
+The training script also fits comparison models on the same patient-level split:
 
 - `dummy_most_frequent`: majority-class baseline that ignores predictors.
 - `logistic_regression`: regularized class-weighted logistic regression using the same preprocessing pipeline.
+- `random_forest`: class-weighted random forest comparison model.
 
 Baseline artifacts are saved to:
 
 ```text
 models/icu_los_classifier_dummy_most_frequent.joblib
 models/icu_los_classifier_logistic_regression.joblib
+models/icu_los_classifier_random_forest.joblib
 ```
 
 Reports are saved under:

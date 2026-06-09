@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyClassifier
-from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -63,6 +63,25 @@ def build_logistic_regression_baseline(numeric_cols: list[str], categorical_cols
         class_weight="balanced",
         max_iter=1000,
         n_jobs=None,
+        random_state=42,
+    )
+    return Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            ("model", classifier),
+        ]
+    )
+
+
+def build_random_forest_baseline(numeric_cols: list[str], categorical_cols: list[str]) -> Pipeline:
+    """Build a class-weighted random forest comparison model."""
+    preprocessor = build_preprocessor(numeric_cols, categorical_cols)
+    classifier = RandomForestClassifier(
+        n_estimators=300,
+        max_depth=None,
+        min_samples_leaf=5,
+        class_weight="balanced_subsample",
+        n_jobs=-1,
         random_state=42,
     )
     return Pipeline(

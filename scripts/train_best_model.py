@@ -25,11 +25,15 @@ from src.features.build_features import (
     make_sample_dataset,
 )
 from src.models.pipeline import build_classifier, fit_with_balanced_weights
-from src.models.pipeline import build_dummy_baseline, build_logistic_regression_baseline
+from src.models.pipeline import (
+    build_dummy_baseline,
+    build_logistic_regression_baseline,
+    build_random_forest_baseline,
+)
 
 
 MODEL_NAME = "icu_los_classifier"
-BASELINE_MODEL_NAMES = ["dummy_most_frequent", "logistic_regression"]
+BASELINE_MODEL_NAMES = ["dummy_most_frequent", "logistic_regression", "random_forest"]
 
 
 def parse_args() -> argparse.Namespace:
@@ -71,6 +75,7 @@ def _fit_models(numeric_cols: list[str], categorical_cols: list[str], X_train, y
     models = {
         "dummy_most_frequent": build_dummy_baseline(),
         "logistic_regression": build_logistic_regression_baseline(numeric_cols, categorical_cols),
+        "random_forest": build_random_forest_baseline(numeric_cols, categorical_cols),
         MODEL_NAME: build_classifier(numeric_cols, categorical_cols),
     }
     fitted = {}

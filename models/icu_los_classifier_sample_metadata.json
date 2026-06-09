@@ -1,6 +1,6 @@
 {
   "model_name": "icu_los_classifier_sample",
-  "created_at_utc": "2026-06-09T21:56:14.690548+00:00",
+  "created_at_utc": "2026-06-09T22:11:30.810178+00:00",
   "task": "three-class ICU length-of-stay classification",
   "target_definition": {
     "0": "LOS < 2 days",
@@ -12,7 +12,8 @@
   "class_imbalance": "balanced sample weights fitted on training split only",
   "baseline_models": [
     "dummy_most_frequent",
-    "logistic_regression"
+    "logistic_regression",
+    "random_forest"
   ],
   "model_path": "/Users/brandonwu/Documents/ICU_LOS_Survival_Analysis/models/icu_los_classifier_sample.joblib",
   "train_rows": 47,

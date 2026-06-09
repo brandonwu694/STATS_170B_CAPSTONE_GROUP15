@@ -26,7 +26,11 @@ from src.features.build_features import (
     make_sample_dataset,
 )
 from src.models.pipeline import build_classifier, fit_with_balanced_weights
-from src.models.pipeline import build_dummy_baseline, build_logistic_regression_baseline
+from src.models.pipeline import (
+    build_dummy_baseline,
+    build_logistic_regression_baseline,
+    build_random_forest_baseline,
+)
 
 
 class ClassificationPipelineTests(unittest.TestCase):
@@ -115,6 +119,10 @@ class ClassificationPipelineTests(unittest.TestCase):
         dummy = build_dummy_baseline()
         dummy.fit(train[feature_cols], train[TARGET_COLUMN])
         self.assertEqual(len(dummy.predict(test[feature_cols])), len(test))
+
+        random_forest = build_random_forest_baseline(numeric_cols, categorical_cols)
+        random_forest.fit(train[feature_cols], train[TARGET_COLUMN])
+        self.assertEqual(len(random_forest.predict(test[feature_cols])), len(test))
 
     def test_unused_raw_sources_build_first24h_stay_level_features(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
