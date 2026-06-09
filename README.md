@@ -1,6 +1,6 @@
 # ICU Length of Stay Classification
 
-This capstone project now predicts ICU length-of-stay category from information available at ICU admission through the first 24 hours only.
+This capstone project aims to predict ICU length-of-stay category from information available at ICU admission through the first 24 hours only.
 
 Target classes:
 
@@ -170,5 +170,3 @@ This notebook summarizes saved model reports and checks patient-level split inte
 ## Restricted MIMIC-IV Data
 
 The full project requires restricted MIMIC-IV data from PhysioNet. These data are not included in this repository and must be obtained externally through PhysioNet credentialing and the required data-use agreement. After approval, place the source files locally under `data/raw/`.
-
-Only add new sources if the resulting features can be computed from ICU admission through hour 24 and do not reveal discharge timing, death timing, final LOS, or events after hour 24.
