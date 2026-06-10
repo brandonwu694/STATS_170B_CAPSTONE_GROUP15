@@ -150,6 +150,9 @@ Confusion matrix, rows=true and columns=predicted:
       weighted avg       0.73      0.62      0.63        24
 
 </pre>
+<h2>Real Held-Out Test Interpretation</h2>
+<p>The table above is based on the synthetic demo sample, which is only included to show that the saved model can run. The main performance interpretation should come from the real held-out test set reported in <code>models/icu_los_classifier_metadata.json</code> and the full project reports.</p>
+<p>On that real test set, the model performs best on short ICU stays (<code>&lt;2</code> days). It has more difficulty separating intermediate and long stays. For long stays (<code>&gt;7</code> days), recall is moderate but precision is lower, so the model tends to over-flag some shorter stays as prolonged rather than only missing long stays.</p>
 <h2>Examples Sorted By Errors First</h2>
 <table border="1" class="dataframe">
   <thead>

@@ -24,8 +24,9 @@ Target classes:
 ├── tests/
 │   └── test_classification_pipeline.py
 ├── notebooks/
-│   ├── project.ipynb
-│   └── model_performance_checks.ipynb
+│   ├── 01_los_category_validation.ipynb
+│   ├── 02_model_performance_checks.ipynb
+│   └── 03_project.ipynb
 ├── data/
 │   └── sample/        # synthetic demo data only
 ├── models/            # saved model artifacts
@@ -152,7 +153,7 @@ reports/classification/hgb_tuning_results.csv
 The demo uses only synthetic data and should run in under 1 minute:
 
 ```bash
-jupyter notebook notebooks/project.ipynb
+jupyter notebook notebooks/03_project.ipynb
 ```
 
 The demo loads:
@@ -173,7 +174,7 @@ python scripts/train_best_model.py --sample
 Run the performance and assumption-check notebook:
 
 ```bash
-jupyter notebook notebooks/model_performance_checks.ipynb
+jupyter notebook notebooks/02_model_performance_checks.ipynb
 ```
 
 This notebook reviews saved model reports and checks patient-level split integrity, target labels, leakage-prone feature names, feature compatibility with the saved model, and prediction output shape.
@@ -181,7 +182,7 @@ This notebook reviews saved model reports and checks patient-level split integri
 To compare the selected LOS categories with an alternative `<=7`, `7-14`, `>14` day definition, run:
 
 ```bash
-jupyter notebook notebooks/los_category_validation.ipynb
+jupyter notebook notebooks/01_los_category_validation.ipynb
 ```
 
 ## Restricted MIMIC-IV Data
