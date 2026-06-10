@@ -6,11 +6,13 @@ data/*
 !data/sample/
 !data/sample/**
 
-# Keep generated full-data model artifacts local. The synthetic sample model is
-# small enough for the public demo and safe to publish.
+# Ignore generated comparison model artifacts, but keep the selected
+# HistGradientBoosting model and small demo artifacts trackable.
 models/*.joblib
 models/*_metadata.json
 !models/.gitkeep
+!models/icu_los_classifier.joblib
+!models/icu_los_classifier_metadata.json
 !models/icu_los_classifier_sample.joblib
 !models/icu_los_classifier_sample_metadata.json
 
